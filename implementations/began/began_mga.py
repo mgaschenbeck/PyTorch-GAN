@@ -14,7 +14,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-os.makedirs("images", exist_ok=True)
+#MGA
+import gis_generator
+os.makedirs("C:/Data/Output", exist_ok=True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
@@ -111,20 +113,30 @@ if cuda:
 generator.apply(weights_init_normal)
 discriminator.apply(weights_init_normal)
 
-# Configure data loader
-os.makedirs("../../data/mnist", exist_ok=True)
-dataloader = torch.utils.data.DataLoader(
-    datasets.MNIST(
-        "../../data/mnist",
-        train=True,
-        download=True,
-        transform=transforms.Compose(
-            [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
-        ),
-    ),
-    batch_size=opt.batch_size,
-    shuffle=True,
-)
+#MGA
+# # Configure data loader
+# os.makedirs("../../data/mnist", exist_ok=True)
+# dataloader = torch.utils.data.DataLoader(
+#     datasets.MNIST(
+#         "../../data/mnist",
+#         train=True,
+#         download=True,
+#         transform=transforms.Compose(
+#             [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
+#         ),
+#     ),
+#     batch_size=opt.batch_size,
+#     shuffle=True,
+# )
+
+#MGA
+dataset = gis_generator.ImData("C:/Data/Images",opt.img_size)
+train_size = int(.95*len(dataset))
+val_size = len(dataset)-train_size
+TrainDataset,ValDataset = torch.utils.data.random_split(dataset, [train_size,val_size])
+
+dataloader = DataLoader(TrainDataset,opt.batch_size)
+dataloader_val = DataLoader(ValDataset,16)
 
 # Optimizers
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
@@ -142,7 +154,7 @@ lambda_k = 0.001
 k = 0.0
 
 for epoch in range(opt.n_epochs):
-    for i, (imgs, _) in enumerate(dataloader):
+    for i, imgs in enumerate(dataloader):
 
         # Configure input
         real_imgs = Variable(imgs.type(Tensor))
@@ -193,7 +205,8 @@ for epoch in range(opt.n_epochs):
         k = min(max(k, 0), 1)  # Constraint to interval [0, 1]
 
         # Update convergence metric
-        M = (d_loss_real + torch.abs(diff)).data[0]
+        #M = (d_loss_real + torch.abs(diff)).data[0]
+        M = (d_loss_real + torch.abs(diff)).data.item()
 
         # --------------
         # Log Progress
@@ -206,6 +219,4 @@ for epoch in range(opt.n_epochs):
 
         batches_done = epoch * len(dataloader) + i
         if batches_done % opt.sample_interval == 0:
-            #save_image(gen_imgs.data[:25], "images/%d.png" % batches_done, nrow=5, normalize=True)
-            #MGA
             save_image(gen_imgs.data[:25], "C:/Data/Output/%d.png" % batches_done, nrow=5, normalize=True)

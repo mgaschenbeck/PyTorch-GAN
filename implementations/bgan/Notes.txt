@@ -1,0 +1,5 @@
+Notes
+
+- This worked a little better than DCGAN IMO
+- Losses were balanced
+- There's a bug, where we're giving the loss function something outside of [0,1]

@@ -1,0 +1,5 @@
+Notes
+
+- Training works for a while and then no visual improvements.
+- Reasonable results that don't sharpen past a certain point.
+- generator loss always much bigger

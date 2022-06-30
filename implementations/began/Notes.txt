@@ -1,0 +1,9 @@
+Notes
+
+-All generated images appear the exact same
+-The single generated image seems reasonable
+-Loss remains balanced
+
+-Could DCGAN be helped by the loss balancing?
+
+
